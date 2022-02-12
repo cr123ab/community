@@ -20,7 +20,8 @@ public class MailClient {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("$(spring.mail.username)")
+    //报错原因：正确写法：${}，错误写法：$()
+    @Value("${spring.mail.username}")
     private String from;
 
     public void sendMail(String to, String subject, String content){
