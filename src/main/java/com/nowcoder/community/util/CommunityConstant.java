@@ -10,12 +10,12 @@ public interface CommunityConstant {
     /**
      * 重复激活
      */
-    int ACTIVATION_REPEAT = 0;
+    int ACTIVATION_REPEAT = 1;
 
     /**
      * 激活失败
      */
-    int ACTIVATION_FAIL = 0;
+    int ACTIVATION_FAIL = 2;
 
 
     /**
