@@ -68,20 +68,20 @@ public class UserController {
         }
 
         //生成随机文件名
-        fileName = CommunityUtil.generateUUID() + "." + suffix;
+        fileName = CommunityUtil.generateUUID() + suffix;
         //确定文件存放路径
         File dest = new File(uploadPath + "/" + fileName);
         try {
             headerImage.transferTo(dest);
         } catch (IOException e) {
-            logger.error("上唇文件失败:" + e.getMessage());
+            logger.error("上传文件失败:" + e.getMessage());
             throw  new RuntimeException("上传文件失败，服务器发生异常");
         }
 
         //更显当前用户头像路径(web访问路经)
         //http://localhost:8080/community/user/header/xxx.png
         User user = hostHolder.getUser();
-        String headerUrl = domain + contextPath + "/user/header" + fileName;
+        String headerUrl = domain + contextPath + "/user/header/" + fileName;
         userService.updateHeader(user.getId(),headerUrl);
 
         return "redirect:/index";
