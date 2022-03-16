@@ -24,6 +24,7 @@ function publish() {
             	// 刷新页面
             	if(data.code == 0){
             	    window.location.reload();
+
             	}
             }, 2000);
 	    }
