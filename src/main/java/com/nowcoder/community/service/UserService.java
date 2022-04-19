@@ -239,13 +239,15 @@ public class UserService implements CommunityConstant {
         return list;
     }
 
-    // 修改密码
-    public int updatePassword(int userId, String password){
-        String password1 = CommunityUtil.md5(password + userMapper.selectById(userId).getSalt());
-//        return userMapper.updatePassword(userId, password1);
-        int rows = userMapper.updatePassword(userId, password1);
-        clearCache(userId);
-        return rows;
+    //修改密码
+    public Map<String, Object> updatePassword(int userId, String oldPassword, String newPassword) {
+        Map<String, Object> map = new HashMap<>();
+        if(oldPassword.equals(newPassword)){
+            map.put("newPasswordMsg", "新密码和老密码不能相同！");
+            return map;
+        }
+        userMapper.updatePassword(userId, newPassword);
+        return map;
     }
 
 }

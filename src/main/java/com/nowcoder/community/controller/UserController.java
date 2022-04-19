@@ -129,35 +129,29 @@ public class UserController implements CommunityConstant {
     }
 
     @LoginRequired
-    @RequestMapping(value = "/updatepw", method = RequestMethod.POST)
-    public String updatePassword(String userName, String newUserName, String repeatUserName, Model model, HttpServletResponse response, HttpServletRequest request){
-        if (userName == null){
-            model.addAttribute("pwMsg1", "密码不能为空！");
-            return "/site/setting";
-        }
-        if (newUserName == null){
-            model.addAttribute("pwMsg2", "新密码不能为空！");
-            return "/site/setting";
-        }
-        if (!newUserName.equals(repeatUserName)){
-            model.addAttribute("pwMsg3", "两次密码不一致！");
-            return "/site/setting";
-        }
-
-        // 检验原密码是否正确
+    @RequestMapping(path = "/updatePassword", method = RequestMethod.POST)
+    public String updatePassword(String oldPassword, String newPassword, Model model) {
         User user = hostHolder.getUser();
-        // 为原密码加密
-        userName = CommunityUtil.md5(userName + user.getSalt());
-        if (!user.getPassword().equals(userName)){
-            model.addAttribute("pwMsg1", "原密码输入错误！");
+        if (StringUtils.isBlank(oldPassword)) {
+            model.addAttribute("oldPasswordMsg", "原密码不能为空！");
             return "/site/setting";
         }
-
-        userService.updatePassword(user.getId(), newUserName);
-        // 从cookie中获取凭证
-        String ticket = CookieUtil.getValue(request, "ticket");
-        userService.logout(ticket);
-        return "redirect:/login";
+        if (StringUtils.isBlank(newPassword)) {
+            model.addAttribute("newPasswordMsg", "新密码不能为空！");
+            return "/site/setting";
+        }
+        oldPassword = CommunityUtil.md5(oldPassword + user.getSalt());
+        if (!user.getPassword().equals(oldPassword)) {
+            model.addAttribute("oldPasswordMsg", "原密码不正确，请重新输入！");
+            return "/site/setting";
+        }
+        newPassword = CommunityUtil.md5(newPassword + user.getSalt());
+        Map<String, Object> map = userService.updatePassword(user.getId(), oldPassword, newPassword);
+        if (map.containsKey("newPasswordMsg")) {
+            model.addAttribute("newPasswordMsg", map.get("newPasswordMsg"));
+            return "/site/setting";
+        }
+        return "redirect:/index";
     }
 
 
