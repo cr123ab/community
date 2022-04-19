@@ -96,7 +96,7 @@ public class ElasticsearchService {
                     }
 
                     HighlightField contentField = hit.getHighlightFields().get("content");
-                    if (titleField != null){
+                    if (contentField != null){
                         post.setContent(contentField.getFragments()[0].toString());
                     }
 

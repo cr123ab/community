@@ -1,12 +1,14 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.annotation.LoginRequired;
+import com.nowcoder.community.dao.UserMapper;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.FollowService;
 import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
+import com.nowcoder.community.util.CookieUtil;
 import com.nowcoder.community.util.HostHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,12 +22,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.FileHandler;
 
@@ -55,6 +59,9 @@ public class UserController implements CommunityConstant {
 
     @Autowired
     private FollowService followService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @LoginRequired
     @RequestMapping(path = "/setting",method = RequestMethod.GET)
@@ -120,6 +127,40 @@ public class UserController implements CommunityConstant {
 
 
     }
+
+    @LoginRequired
+    @RequestMapping(value = "/updatepw", method = RequestMethod.POST)
+    public String updatePassword(String userName, String newUserName, String repeatUserName, Model model, HttpServletResponse response, HttpServletRequest request){
+        if (userName == null){
+            model.addAttribute("pwMsg1", "密码不能为空！");
+            return "/site/setting";
+        }
+        if (newUserName == null){
+            model.addAttribute("pwMsg2", "新密码不能为空！");
+            return "/site/setting";
+        }
+        if (!newUserName.equals(repeatUserName)){
+            model.addAttribute("pwMsg3", "两次密码不一致！");
+            return "/site/setting";
+        }
+
+        // 检验原密码是否正确
+        User user = hostHolder.getUser();
+        // 为原密码加密
+        userName = CommunityUtil.md5(userName + user.getSalt());
+        if (!user.getPassword().equals(userName)){
+            model.addAttribute("pwMsg1", "原密码输入错误！");
+            return "/site/setting";
+        }
+
+        userService.updatePassword(user.getId(), newUserName);
+        // 从cookie中获取凭证
+        String ticket = CookieUtil.getValue(request, "ticket");
+        userService.logout(ticket);
+        return "redirect:/login";
+    }
+
+
 
     //个人主页
     @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
