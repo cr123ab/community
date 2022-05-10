@@ -74,7 +74,8 @@ public class LoginController implements CommunityConstant {
 
     //http://localhost:8080/community/activation/101/code
     @RequestMapping(path = "/activation/{userId}/{code}",method = RequestMethod.GET)
-    public String activation(Model model, @PathVariable("userId") int userId, @PathVariable("code") String code){
+    public String activation(Model model, @PathVariable("userId") int userId,
+                             @PathVariable("code") String code){
         int result = userService.activation(userId,code);
         if (result == ACTIVATION_SUCCESS){
             model.addAttribute("msg","激活成功，您的账号已经可以正常使用了！");
@@ -123,20 +124,16 @@ public class LoginController implements CommunityConstant {
     public String login(String username, String password, String code, boolean rememberme,
                         Model model, /*HttpSession session,*/ HttpServletResponse response,
                         @CookieValue("kaptchaOwner") String kaptchaOwner){
-
         //String kaptcha = (String) session.getAttribute("kaptcha");
         String kaptcha = null;
         if (StringUtils.isNotBlank(kaptchaOwner)){
             String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
             kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
         }
-
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)){
             model.addAttribute("codeMsg","验证码不正确");
             return "/site/login";
-
         }
-
         //检查账号密码
         int expiredSeconds = rememberme ? REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPIRED_SECONDS;
         Map<String , Object> map = userService.login(username,password,expiredSeconds);
@@ -146,7 +143,6 @@ public class LoginController implements CommunityConstant {
             cookie.setMaxAge(expiredSeconds);
             response.addCookie(cookie);
             return "redirect:/index";
-
         }else {
             model.addAttribute("usernameMsg",map.get("usernameMsg"));
             model.addAttribute("passwordMsg",map.get("passwordMsg"));
